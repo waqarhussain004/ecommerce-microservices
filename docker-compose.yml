@@ -1,0 +1,237 @@
+services:
+
+
+  # =========================
+  # API GATEWAY
+  # =========================
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+
+    container_name: ecommerce-api-gateway
+
+    env_file:
+    - ./services/api-gateway/.env
+
+    ports:
+      - "8080:8000"
+
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+      - payment-service
+
+    networks:
+      - ecommerce-network
+
+  # =========================
+  # USER DATABASE
+  # =========================
+  user-postgres:
+    image: postgres:16
+    container_name: ecommerce-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: user_db
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - ecommerce-network
+
+
+  # =========================
+  # USER SERVICE
+  # =========================
+  user-service:
+    build:
+      context: ./services/user-service
+
+    container_name: ecommerce-user-service
+
+    env_file:
+      - ./services/user-service/.env
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - user-postgres
+
+    networks:
+      - ecommerce-network
+
+
+  # =========================
+  # PRODUCT DATABASE
+  # =========================
+  product-postgres:
+    image: postgres:16
+    container_name: ecommerce-product-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: product_db
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - product_postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - ecommerce-network
+
+
+  # =========================
+  # PRODUCT SERVICE
+  # =========================
+  product-service:
+    build:
+      context: ./services/product-service
+
+    container_name: ecommerce-product-service
+
+    env_file:
+      - ./services/product-service/.env
+
+    ports:
+      - "8001:8001"
+
+    depends_on:
+      - product-postgres
+
+    networks:
+      - ecommerce-network
+
+
+  # =========================
+  # ORDER DATABASE
+  # =========================
+  order-postgres:
+    image: postgres:16
+    container_name: ecommerce-order-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order_db
+
+    ports:
+      - "5434:5432"
+
+    volumes:
+      - order_postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - ecommerce-network
+
+
+  # =========================
+  # ORDER SERVICE
+  # =========================
+  order-service:
+    build:
+      context: ./services/order-service
+
+    container_name: ecommerce-order-service
+
+    env_file:
+      - ./services/order-service/.env
+
+    ports:
+      - "8002:8002"
+
+    depends_on:
+      - order-postgres
+      - product-service
+
+    networks:
+      - ecommerce-network
+
+
+  # =========================
+  # PAYMENT DATABASE
+  # =========================
+  payment-postgres:
+    image: postgres:16
+    container_name: ecommerce-payment-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: payment_db
+
+    ports:
+      - "5435:5432"
+
+    volumes:
+      - payment_postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - ecommerce-network
+
+
+  # =========================
+  # PAYMENT SERVICE
+  # =========================
+  payment-service:
+    build:
+      context: ./services/payment-service
+
+    container_name: ecommerce-payment-service
+
+    env_file:
+      - ./services/payment-service/.env
+
+    ports:
+      - "8003:8003"
+
+    depends_on:
+      - payment-postgres
+      - order-service
+
+    networks:
+      - ecommerce-network
+
+
+# =========================
+# EXISTING VOLUMES
+# =========================
+
+volumes:
+
+  user_postgres_data:
+    external: true
+    name: ecommerce-microservices_postgres_data
+
+  product_postgres_data:
+    external: true
+    name: product-service_product_postgres_data
+
+  order_postgres_data:
+    external: true
+    name: order-service_order_postgres_data
+
+  payment_postgres_data:
+    external: true
+    name: payment_postgres_data
+
+
+# =========================
+# COMMON NETWORK
+# =========================
+
+networks:
+
+  ecommerce-network:
+    name: ecommerce-network
+    external: true

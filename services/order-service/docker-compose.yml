@@ -1,0 +1,19 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: ecommerce-order-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order_db
+
+    ports:
+      - "5434:5432"
+
+    volumes:
+      - order_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  order_postgres_data:
